@@ -1,0 +1,80 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace WindowsFormsApp1
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        Point f1, f2;
+        int k = 1;
+        Bitmap map = new Bitmap(2000, 2000);
+
+        void line (int xa, int xb, int ya, int yb)
+        {
+            if (xb<xa && yb<ya && Math.Abs((yb-ya)/(xb-xa))<=1)
+            {
+                int t;
+                t = xa;
+                xa = xb;
+                xb = t;
+                t = ya;
+                ya = yb;
+                yb = t;
+            }
+            int y = ya;
+            int dx = xb - xa;
+            int dy = yb - ya;
+            int d = (dy << 1) - dx;
+            int d1 = dy << 1;
+            int d2 = (dy - dx) << 1;
+            map.SetPixel(xa,xb,Color.Black);
+            for(int x =xa+1; x<=xb; x++)
+            {
+                if (d>0)
+                {
+                    d += d2;
+                    y++;
+                }
+                else
+                {
+                    d += d1;
+                }
+                map.SetPixel(x, y, Color.Black);
+            }
+
+        }
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (k == 1)//ставим первую точку
+            {
+                f1 = e.Location;
+                k --;
+            }
+            else
+            {
+                f2 = e.Location;
+                k --;
+            }
+
+            if(k == -1 )
+            {
+                line(f1.X, f2.X, f1.Y, f2.Y);
+                pictureBox1.Image = map;
+                k = 1;
+            }
+        }
+    }
+}

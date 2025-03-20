@@ -1,0 +1,108 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace WindowsFormsApp1
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        Point f1, f2;
+        int k = 1;
+        Bitmap map = new Bitmap(2000, 2000);
+
+        void line (int xa, int xb, int ya, int yb)
+        {
+            //в случае 2 и 3 четвертей меняем X1 и X2 местами, т.о. алгоритм необходимо реализовать лишь для 1 и 4 четвертей
+            if (xb<xa)
+            {
+                int t;
+                t = xa;
+                xa = xb;
+                xb = t;
+                t = ya;
+                ya = yb;
+                yb = t;
+
+            }
+            int x = xa;//алгоритм для 1 и 4 четвертей
+            int y = ya;
+            int dx = xb - xa;
+            int dy = yb - ya;
+            int signy = Math.Sign(dy);//для случая когда x,y в 4 четверти 
+            map.SetPixel(xa,ya,Color.Black);
+            if (Math.Abs((yb - ya) / (xb - xa)) <= 1) // случай| k |< 1
+            {
+                //в случае 4 четверти dy отрицательно и y должен уменьшаться, соответственно с учетом sign(y) изменяем знаки в слагаемых
+                //в 1 и 4 четвертях знак dx положительный, его не учитываем
+                int d = (dy << 1) - dx*signy;//значение отвечающее за то где проходит прямая (выше середины пикселя или ниже), линейно зависит от k 
+                int d1 = dy << 1;//в случае если точка ниже середины пикселя, то параметр, уменьшать не надо, лишь "увеличить на k"
+                int d2 = (dy - dx*signy) << 1;//в случае если точка выше середины пикселя, то параметр помимо "увеличения на k" надо "уменьшить на 1"
+                for (x = xa + 1; x <= xb; x++)
+                {
+                    if (d*signy > 0)
+                    {
+                        d += d2;
+                        y+=signy;
+                    }
+                    else
+                    {
+                        d += d1;
+                    }
+                    map.SetPixel(x, y, Color.Black);
+                }
+            }
+            else//если k>1, то необходимо брать функцию x(y), т.о. |k~|>1 
+            {
+                int d = (dx << 1) - dy*signy;
+                int d1 = dx << 1;
+                int d2 = (dx - dy*signy) << 1;
+                for (y = ya + signy; y*signy <= yb*signy; y+=signy)
+                {
+                    if (d > 0)
+                    {
+                        d += d2;
+                        x++;
+                    }
+                    else
+                    {
+                        d += d1;
+                    }
+                    map.SetPixel(x, y, Color.Black);
+                }
+            }
+
+        }
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (k == 1)//ставим первую точку
+            {
+                f1 = e.Location;
+                k --;
+            }
+            else
+            {
+                f2 = e.Location;
+                k --;
+            }
+
+            if(k == -1 )
+            {
+                line(f1.X, f2.X, f1.Y, f2.Y);
+                pictureBox1.Image = map;
+                k = 1;
+            }
+        }
+    }
+}
